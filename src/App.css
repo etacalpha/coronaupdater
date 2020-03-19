@@ -1,38 +1,86 @@
 .App {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  align-content: center;
+  height: 100vh;
   text-align: center;
+  overflow: hidden !important;
+  background-image: url("assets/img/TexturesCom_Splatter0008_M.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: #fff;
+  font-size: 1.15em;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.box{
+  border: 1px solid #454040;
+  border-radius: 25px;
+  background-color: rgba(12, 10, 10, 0.705);
+  height: fit-content;
+  margin:1em;
+  box-shadow: 5px 5px 10px black;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+#worldSummary{
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
+#worldSummaryData {
+  display: flex;
+  flex-direction: column;
+text-align: left;  
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+#usSummary{
+  display: flex;
+  flex-direction: column;
+}
+
+#usSummaryData {
+  display: flex;
+  flex-direction: column;
+text-align: left;  
+}
+
+#totals{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-content: space-between;
+  width:40em;
+}
+#worldTotalsData{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+span {
+  padding: 0.5em;
+}
+h5 {
+  margin: 0;
+}
+hr {
+  height: 1px;
+  border: 0;
+  color: #333;
+  background-color: rgb(70, 73, 73);
+}
+header{
+  width: 100vw;
+}
+@media (max-width: 1555px) { 
+  .App{
+  overflow: scroll;
+   height: unset;
+   font-size: 1em;;
   }
-  to {
-    transform: rotate(360deg);
+  .box{width: 80%;}
+
+  hr{
+    width: min-content;
   }
+
 }
