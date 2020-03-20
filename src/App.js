@@ -21,13 +21,13 @@ function App() {
     return Object.values(merged);
   };
 
-
   /**
    * Return combined total of key for all objects
    * @param {Object[]} array
    * @param {string} key - obj key to add
    */
-  const valueAdd = (array, key) => { return array.reduce((a,b) => a +b[key],0)
+  const valueAdd = (array, key) => {
+    return array.reduce((a, b) => a + b[key], 0);
   };
 
   /**
@@ -36,7 +36,12 @@ function App() {
    * @param {'string'} key for date value in objects
    */
   const lastUpdated = (array, key) => {
-    return array.map(function(item) { return item[key]; }).sort().reverse()[0]
+    return array
+      .map(function(item) {
+        return item[key];
+      })
+      .sort()
+      .reverse()[0];
   };
 
   /**
@@ -46,8 +51,10 @@ function App() {
    * @param {string} oldKey - name of key to change from
    * @param {Date} lastUpdateTime - Date to filter objects
    */
-  const arrayScrubber = (array, newKey, oldKey, lastUpdateTime,) => {
-    return array.filter(item => item.Date === lastUpdateTime).map(item => ({
+  const arrayScrubber = (array, newKey, oldKey, lastUpdateTime) => {
+    return array
+      .filter(item => item.Date === lastUpdateTime)
+      .map(item => ({
         ...item,
         [newKey]: item[oldKey]
       }));
@@ -55,7 +62,6 @@ function App() {
 
   // Handle state
   useEffect(() => {
-
     const fetchData = async () => {
       const [
         resSummary,
@@ -68,15 +74,14 @@ function App() {
         axios("https://api.covid19api.com/country/US/status/confirmed"),
         axios("https://api.covid19api.com/country/US/status/recovered")
       ]);
-  
+
       // all list sorted by Cases confirmed
       resSummary.data.Countries.sort((a, b) =>
         a.TotalConfirmed > b.TotalConfirmed ? -1 : 1
       );
-  
+
       // Get Totals for all countries
-      const totalDeath = valueAdd(resSummary.data.Countries, 'TotalDeaths');
-  
+      const totalDeath = valueAdd(resSummary.data.Countries, "TotalDeaths");
       const totalConfirmed = valueAdd(
         resSummary.data.Countries,
         "TotalConfirmed"
@@ -85,18 +90,20 @@ function App() {
         resSummary.data.Countries,
         "TotalRecovered"
       );
-  
+
       const usTotal = resSummary.data.Countries.filter(
         Countries => Countries.Country === "US"
       );
-  
+
       // Get last date usDeaths list / summary was updated
-      const updateDate = new Date(resSummary.data.Date).toString().split("G")[0];
-  
+      const updateDate = new Date(resSummary.data.Date)
+        .toString()
+        .split("G")[0];
+
       const lastUsDeathUpdate = lastUpdated(resUsDeaths.data, "Date");
       const lastUsConfirmedUpdate = lastUpdated(resUsConfirmed.data, "Date");
       const lastUsRecoveredUpdate = lastUpdated(resUsRecovered.data, "Date");
-  
+
       // scrub arrays for most recent time and change object key to prepare for merge
       let deathScrubbed = arrayScrubber(
         resUsDeaths.data,
@@ -104,7 +111,7 @@ function App() {
         "Cases",
         lastUsDeathUpdate
       );
-      
+
       let confirmedScrubbed = arrayScrubber(
         resUsConfirmed.data,
         "confirmed",
@@ -117,16 +124,16 @@ function App() {
         "Cases",
         lastUsRecoveredUpdate
       );
-  
+
       // Merge arrays to combine aggregate data for death, confirmed, recovered
       let holder = mergeArrays([deathScrubbed, confirmedScrubbed], "Province");
       let usComplete;
       if (holder)
         usComplete = mergeArrays([holder, recoveredScrubbed], "Province");
-  
+
       // sort array for use by confirmation
       if (usComplete) usComplete.sort((a, b) => b.confirmed - a.confirmed);
-  
+
       setData({
         summary: resSummary.data,
         usDeaths: resUsDeaths.data,
@@ -148,8 +155,7 @@ function App() {
       console.log(err);
     }
   }, []);
-  console.log(data);
-
+  console.log("created by Steven Beard, email: etacalpha@gmail.com")
   return (
     <main className="App">
       <header className={"box"}>
@@ -160,7 +166,7 @@ function App() {
             Johns Hopkins CSSE
           </a>
         </p>
-        <span>(Updated: {data?data.lastUpdated:'Data is loading'})</span>
+        <span>(Updated: {data ? data.lastUpdated : "Data is loading"})</span>
       </header>
 
       <article id="data.summary" className={"box"}>
@@ -171,7 +177,8 @@ function App() {
         </span>
         <Scrollbar style={{ width: 370, height: 600 }}>
           <section id={"worldSummaryData"}>
-            {data? data.summary.Countries.map((item, index) => (
+            {data
+              ? data.summary.Countries.map((item, index) => (
                   <section key={index + 400}>
                     <span key={index + 200} style={{ color: "red" }}>
                       {item.TotalDeaths.toLocaleString()}
@@ -186,7 +193,7 @@ function App() {
                     <hr />
                   </section>
                 ))
-              : 'Data is loading'}
+              : "Data is loading"}
           </section>
         </Scrollbar>
       </article>
@@ -200,19 +207,25 @@ function App() {
             <section style={{ color: "red" }}>
               <h3>Deaths</h3>
               <h3>
-                {data ? data.usTotals[0].TotalDeaths.toLocaleString() : 'Data is loading'}
+                {data
+                  ? data.usTotals[0].TotalDeaths.toLocaleString()
+                  : "Data is loading"}
               </h3>
             </section>
             <section style={{ color: "yellow" }}>
               <h3>Confirmed</h3>
               <h3>
-                {data ? data.usTotals[0].TotalConfirmed.toLocaleString() : 'Data is loading'}
+                {data
+                  ? data.usTotals[0].TotalConfirmed.toLocaleString()
+                  : "Data is loading"}
               </h3>
             </section>
             <section style={{ color: "green" }}>
               <h3>Recovered</h3>
               <h3>
-                {data ? data.usTotals[0].TotalRecovered.toLocaleString() : 'Data is loading'}
+                {data
+                  ? data.usTotals[0].TotalRecovered.toLocaleString()
+                  : "Data is loading"}
               </h3>
             </section>
           </section>
@@ -225,15 +238,27 @@ function App() {
           <section id={"worldTotalsData"}>
             <section style={{ color: "red" }}>
               <h3>Deaths</h3>
-              <h3>{data?data.worldTotalDeaths.toLocaleString():'Data is loading'}</h3>
+              <h3>
+                {data
+                  ? data.worldTotalDeaths.toLocaleString()
+                  : "Data is loading"}
+              </h3>
             </section>
             <section style={{ color: "yellow" }}>
               <h3>Confirmed</h3>
-              <h3>{data?data.worldTotalConfirmed.toLocaleString():'Data is loading'}</h3>
+              <h3>
+                {data
+                  ? data.worldTotalConfirmed.toLocaleString()
+                  : "Data is loading"}
+              </h3>
             </section>
             <section style={{ color: "green" }}>
               <h3>Recovered</h3>
-              <h3>{data?data.worldTotalRecovered.toLocaleString():'Data is loading'}</h3>
+              <h3>
+                {data
+                  ? data.worldTotalRecovered.toLocaleString()
+                  : "Data is loading"}
+              </h3>
             </section>
           </section>
         </section>
@@ -272,7 +297,7 @@ function App() {
                     <hr />
                   </section>
                 ))
-              : 'Data is loading'}
+              : "Data is loading"}
           </section>
         </Scrollbar>
       </article>
