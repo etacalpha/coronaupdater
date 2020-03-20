@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  covidupdater.com
+
+  Dashboard to track covid-19
+
+Globals:
+  Function:
+    Timeout: 30
+    Handler: lambda_function.lambda_handler
+    Runtime: python3.7
+  Api:
+    Cors:
+      AllowMethods: "'*'"
+      AllowHeaders: "'*'"
+      AllowOrigin: "'*'"
+    
+Resources:
+
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: covidupdater.com
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+      Tags:
+        -
+          Key: Program
+          Value: covidupdater
+
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref 'WebsiteBucket'
+      PolicyDocument:
+        Statement:
+        - Sid: PublicReadForGetBucketObjects
+          Effect: Allow
+          Principal: '*'
+          Action: s3:GetObject
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref 'WebsiteBucket', /*]]
+
+  covidupdaterRoute53:
+    Type: AWS::Route53::HostedZone
+    Properties: 
+      HostedZoneTags: 
+        - 
+          Key: Program
+          Value: covidupdater
+      Name: covidupdater.com
+
+  covidUpdaterRecordSet:
+    DependsOn: covidupdaterRoute53
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: covidupdater.com.
+      Type: A
+      HostedZoneName: covidupdater.com.
+      AliasTarget:
+        DNSName: s3-website-us-east-1.amazonaws.com
+        HostedZoneId: Z3AQBSTGFYJSTF
