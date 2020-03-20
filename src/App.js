@@ -1,64 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-// import Scrollbar from "react-scrollbars-custom";
+import Scrollbar from "react-scrollbars-custom";
 import "./App.css";
 
 function App() {
   const [data, setData] = useState();
 
-  // Call apis to retrieve data for the page ** hard coded for single use on render
-  const fetchData = async () => {
-    const [
-      resSummary,
-      resUsDeaths,
-      resUsConfirmed,
-      resUsRecovered
-    ] = await Promise.all([
-      axios("https://api.covid19api.com/summary"),
-      axios("https://api.covid19api.com/country/US/status/deaths"),
-      axios("https://api.covid19api.com/country/US/status/confirmed"),
-      axios("https://api.covid19api.com/country/US/status/recovered")
-    ]);
-    setData({
-      summary: resSummary,
-      usDeaths: resUsDeaths,
-      usConfirmed: resUsConfirmed,
-      usRecovered: resUsRecovered
-    });
-  };
-
-  /**
-   * Return combined total of key for all objects
-   * @param {Object[]} array
-   * @param {string} key - obj key to add
-   */
-  const valueAdd = (array, key) => {
-    array
-      .reduce((a, b) => {
-        return a + b[key];
-      }, 0)
-      .toLocaleString();
-  };
-
-  /**
-   * Use only the items with the most recent date and prepare items to be merged (Cases:n needs to have a unique key)
-   * @param {Object[]} array
-   * @param {string} newKey - name of key to change to
-   * @param {string} oldKey - name of key to change from
-   * @param {Date} lastUpdateTime - Date to filter objects
-   */
-  const arrayScrubber = (array, lastUpdateTime, newKey, oldKey) => {
-    return array
-      .filter(item => new Date(item.Date) === lastUpdateTime)
-      .map(item => ({
-        ...item,
-        [newKey]: item[oldKey]
-      }));
-  };
-
   /**
    * Merge (not concat) objects from each array
-   * @param {Array.Array.<Objects>} arrays
+   * @param {[object[],object[]]} arrays
    * @param {string} key - key to merge on
    */
   const mergeArrays = (arrays, key) => {
@@ -71,24 +21,126 @@ function App() {
     return Object.values(merged);
   };
 
+
+  /**
+   * Return combined total of key for all objects
+   * @param {Object[]} array
+   * @param {string} key - obj key to add
+   */
+  const valueAdd = (array, key) => { return array.reduce((a,b) => a +b[key],0)
+  };
+
   /**
    * Return most recent date
    * @param {Object[]} array
    * @param {'string'} key for date value in objects
    */
   const lastUpdated = (array, key) => {
-    new Date(
-      Math.max.apply(
-        null,
-        array.map(function(item) {
-          return new Date(item["key"]);
-        })
-      )
-    );
+    return array.map(function(item) { return item[key]; }).sort().reverse()[0]
+  };
+
+  /**
+   * Use only the items with the most recent date and prepare items to be merged (Cases:n needs to have a unique key)
+   * @param {Object[]} array
+   * @param {string} newKey - name of key to change to
+   * @param {string} oldKey - name of key to change from
+   * @param {Date} lastUpdateTime - Date to filter objects
+   */
+  const arrayScrubber = (array, newKey, oldKey, lastUpdateTime,) => {
+    return array.filter(item => item.Date === lastUpdateTime).map(item => ({
+        ...item,
+        [newKey]: item[oldKey]
+      }));
   };
 
   // Handle state
   useEffect(() => {
+
+    const fetchData = async () => {
+      const [
+        resSummary,
+        resUsDeaths,
+        resUsConfirmed,
+        resUsRecovered
+      ] = await Promise.all([
+        axios("https://api.covid19api.com/summary"),
+        axios("https://api.covid19api.com/country/US/status/deaths"),
+        axios("https://api.covid19api.com/country/US/status/confirmed"),
+        axios("https://api.covid19api.com/country/US/status/recovered")
+      ]);
+  
+      // all list sorted by Cases confirmed
+      resSummary.data.Countries.sort((a, b) =>
+        a.TotalConfirmed > b.TotalConfirmed ? -1 : 1
+      );
+  
+      // Get Totals for all countries
+      const totalDeath = valueAdd(resSummary.data.Countries, 'TotalDeaths');
+  
+      const totalConfirmed = valueAdd(
+        resSummary.data.Countries,
+        "TotalConfirmed"
+      );
+      const totalRecovered = valueAdd(
+        resSummary.data.Countries,
+        "TotalRecovered"
+      );
+  
+      const usTotal = resSummary.data.Countries.filter(
+        Countries => Countries.Country === "US"
+      );
+  
+      // Get last date usDeaths list / summary was updated
+      const updateDate = new Date(resSummary.data.Date).toString().split("G")[0];
+  
+      const lastUsDeathUpdate = lastUpdated(resUsDeaths.data, "Date");
+      const lastUsConfirmedUpdate = lastUpdated(resUsConfirmed.data, "Date");
+      const lastUsRecoveredUpdate = lastUpdated(resUsRecovered.data, "Date");
+  
+      // scrub arrays for most recent time and change object key to prepare for merge
+      let deathScrubbed = arrayScrubber(
+        resUsDeaths.data,
+        "death",
+        "Cases",
+        lastUsDeathUpdate
+      );
+      
+      let confirmedScrubbed = arrayScrubber(
+        resUsConfirmed.data,
+        "confirmed",
+        "Cases",
+        lastUsConfirmedUpdate
+      );
+      let recoveredScrubbed = arrayScrubber(
+        resUsRecovered.data,
+        "recovered",
+        "Cases",
+        lastUsRecoveredUpdate
+      );
+  
+      // Merge arrays to combine aggregate data for death, confirmed, recovered
+      let holder = mergeArrays([deathScrubbed, confirmedScrubbed], "Province");
+      let usComplete;
+      if (holder)
+        usComplete = mergeArrays([holder, recoveredScrubbed], "Province");
+  
+      // sort array for use by confirmation
+      if (usComplete) usComplete.sort((a, b) => b.confirmed - a.confirmed);
+  
+      setData({
+        summary: resSummary.data,
+        usDeaths: resUsDeaths.data,
+        usConfirmed: resUsConfirmed.data,
+        usRecovered: resUsRecovered.data,
+        lastUpdated: updateDate,
+        worldTotalDeaths: totalDeath,
+        worldTotalConfirmed: totalConfirmed,
+        worldTotalRecovered: totalRecovered,
+        usTotals: usTotal,
+        usCompleted: usComplete
+      });
+    };
+
     try {
       fetchData();
     } catch (err) {
@@ -96,67 +148,7 @@ function App() {
       console.log(err);
     }
   }, []);
-
-  // add new state variables
-  useEffect(() => {
-    if (data.summary && data.summary !== "") {
-      // all list sorted by Cases confirmed
-      data.summary.Countries.sort((a, b) =>
-        a.TotalConfirmed > b.TotalConfirmed ? -1 : 1
-      );
-
-        // Get Totals for all countries
-        const totalDeath = valueAdd(data.summary.Countries, "TotalDeaths");
-        const totalConfirmed = valueAdd(data.summary.Countries, "TotalConfirmed");
-        const totalRecovered = valueAdd(data.summary.Countries, "TotalRecovered");
-  
-        const usTotal = data.summary.Countries.filter(
-          Countries => Countries.Country === "US"
-        );
-
-      // Get last date usDeaths list / summary was updated
-      const lastUsUpdate = lastUpdated(usDeaths, "Date");
-      const updateDate = new Date(data.summary.Date).toString().split("G")[0];
-
-      // scrub arrays for most recent time and change object key to prepare for merge
-      let deathScrubbed = arrayScrubber(
-        usDeaths,
-        "death",
-        "Cases",
-        lastUsUpdate
-      );
-      let confirmedScrubbed = arrayScrubber(
-        usConfirmed,
-        "confirmed",
-        "Cases",
-        lastUsUpdate
-      );
-      let recoveredScrubbed = arrayScrubber(
-        usRecovered,
-        "recovered",
-        "Cases",
-        lastUsUpdate
-      );
-
-      // Merge arrays to combine aggregate data for death, confirmed, recovered 
-      let holder = mergeArrays([deathScrubbed, confirmedScrubbed], "Province");
-      let usComplete;
-      if (holder) usComplete = mergeArrays([holder, recoveredScrubbed], "Province");
-
-      // sort array for use by confirmation
-      if (usComplete) usComplete.sort((a, b) => b.confirmed - a.confirmed);
-
-      setData({
-        ...data,
-        lastUpdated: updateDate,
-        worldTotatDeaths: totalDeath,
-        worldTotalConfirmed: totalConfirmed,
-        worldTotalRecovered: totalRecovered,
-        usTotals: usTotal,
-        usCompleted: usComplete
-      });
-    }
-  }, []);
+  console.log(data);
 
   return (
     <main className="App">
@@ -168,7 +160,7 @@ function App() {
             Johns Hopkins CSSE
           </a>
         </p>
-        <span>(Updated: {updateDate})</span>
+        <span>(Updated: {data?data.lastUpdated:'Data is loading'})</span>
       </header>
 
       <article id="data.summary" className={"box"}>
@@ -178,9 +170,8 @@ function App() {
           </h3>
         </span>
         <Scrollbar style={{ width: 370, height: 600 }}>
-          <section id={"data.summaryData"}>
-            {data.summary
-              ? data.summary.Countries.map((item, index) => (
+          <section id={"worldSummaryData"}>
+            {data? data.summary.Countries.map((item, index) => (
                   <section key={index + 400}>
                     <span key={index + 200} style={{ color: "red" }}>
                       {item.TotalDeaths.toLocaleString()}
@@ -195,7 +186,7 @@ function App() {
                     <hr />
                   </section>
                 ))
-              : null}
+              : 'Data is loading'}
           </section>
         </Scrollbar>
       </article>
@@ -209,19 +200,19 @@ function App() {
             <section style={{ color: "red" }}>
               <h3>Deaths</h3>
               <h3>
-                {usTotal ? usTotal[0].TotalDeaths.toLocaleString() : null}
+                {data ? data.usTotals[0].TotalDeaths.toLocaleString() : 'Data is loading'}
               </h3>
             </section>
             <section style={{ color: "yellow" }}>
               <h3>Confirmed</h3>
               <h3>
-                {usTotal ? usTotal[0].TotalConfirmed.toLocaleString() : null}
+                {data ? data.usTotals[0].TotalConfirmed.toLocaleString() : 'Data is loading'}
               </h3>
             </section>
             <section style={{ color: "green" }}>
               <h3>Recovered</h3>
               <h3>
-                {usTotal ? usTotal[0].TotalRecovered.toLocaleString() : null}
+                {data ? data.usTotals[0].TotalRecovered.toLocaleString() : 'Data is loading'}
               </h3>
             </section>
           </section>
@@ -234,15 +225,15 @@ function App() {
           <section id={"worldTotalsData"}>
             <section style={{ color: "red" }}>
               <h3>Deaths</h3>
-              <h3>{totalDeath}</h3>
+              <h3>{data?data.worldTotalDeaths.toLocaleString():'Data is loading'}</h3>
             </section>
             <section style={{ color: "yellow" }}>
               <h3>Confirmed</h3>
-              <h3>{totalConfirmed}</h3>
+              <h3>{data?data.worldTotalConfirmed.toLocaleString():'Data is loading'}</h3>
             </section>
             <section style={{ color: "green" }}>
               <h3>Recovered</h3>
-              <h3>{totalRecovered}</h3>
+              <h3>{data?data.worldTotalRecovered.toLocaleString():'Data is loading'}</h3>
             </section>
           </section>
         </section>
@@ -265,8 +256,8 @@ function App() {
         </span>
         <Scrollbar style={{ width: 370, height: 600 }}>
           <section id={"usSummaryData"}>
-            {usComplete
-              ? usComplete.map((item, index) => (
+            {data
+              ? data.usCompleted.map((item, index) => (
                   <section key={index + 400}>
                     <span key={index + 200} style={{ color: "red" }}>
                       {item.death}
@@ -281,7 +272,7 @@ function App() {
                     <hr />
                   </section>
                 ))
-              : null}
+              : 'Data is loading'}
           </section>
         </Scrollbar>
       </article>
