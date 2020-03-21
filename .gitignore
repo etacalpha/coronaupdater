@@ -24,4 +24,4 @@ yarn-debug.log*
 yarn-error.log*
 
 #Deployment
-/covidupdater/samconfig.toml
+/covidupdater

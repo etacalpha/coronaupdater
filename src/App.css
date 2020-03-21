@@ -6,22 +6,22 @@
   height: 100vh;
   text-align: center;
   overflow: hidden !important;
-  background-image: url("assets/img/TexturesCom_Splatter0008_M.jpg");
+  background-image: url("assets/img/TexturesCom_Splatter0008_M-min.jpg");
   background-repeat: no-repeat;
   background-size: cover;
   color: #fff;
   font-size: 1.15em;
 }
 
-.box{
+.box {
   border: 1px solid #454040;
   border-radius: 25px;
   background-color: rgba(12, 10, 10, 0.705);
   height: fit-content;
-  margin:1em;
+  margin: 1em;
   box-shadow: 5px 5px 10px black;
 }
-#worldSummary{
+#worldSummary {
   display: flex;
   flex-direction: column;
 }
@@ -29,10 +29,10 @@
 #worldSummaryData {
   display: flex;
   flex-direction: column;
-text-align: left;  
+  text-align: left;
 }
 
-#usSummary{
+#usSummary {
   display: flex;
   flex-direction: column;
 }
@@ -40,17 +40,17 @@ text-align: left;
 #usSummaryData {
   display: flex;
   flex-direction: column;
-text-align: left;  
+  text-align: left;
 }
 
-#totals{
+#totals {
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
   align-content: space-between;
-  width:40em;
+  width: 40em;
 }
-#worldTotalsData{
+#worldTotalsData {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
@@ -68,19 +68,20 @@ hr {
   color: #333;
   background-color: rgb(70, 73, 73);
 }
-header{
+header {
   width: 100vw;
 }
-@media (max-width: 1555px) { 
-  .App{
-  overflow: scroll;
-   height: unset;
-   font-size: 1em;;
+@media (max-width: 1555px) {
+  .App {
+    overflow: scroll;
+    height: unset;
+    font-size: 1em;
   }
-  .box{width: 80%;}
+  .box {
+    width: 80%;
+  }
 
-  hr{
+  hr {
     width: min-content;
   }
-
 }
