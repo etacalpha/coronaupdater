@@ -6,63 +6,8 @@ import "./App.css";
 function App() {
   const [data, setData] = useState();
 
-  /**
-   * Merge (not concat) objects from each array
-   * @param {[object[],object[]]} arrays
-   * @param {string} key - key to merge on
-   */
-  const mergeArrays = (arrays, key) => {
-    const merged = {};
-    arrays.forEach(arr => {
-      arr.forEach(item => {
-        merged[item[key]] = Object.assign({}, merged[item[key]], item);
-      });
-    });
-    return Object.values(merged);
-  };
-
-  /**
-   * Return combined total of key for all objects
-   * @param {Object[]} array
-   * @param {string} key - obj key to add
-   */
-  const valueAdd = (array, key) => {
-    return array.reduce((a, b) => a + b[key], 0);
-  };
-
-  /**
-   * Return most recent date
-   * @param {Object[]} array
-   * @param {'string'} key for date value in objects
-   */
-  const lastUpdated = (array, key) => {
-    return array
-      .map(function(item) {
-        return item[key];
-      })
-      .sort()
-      .reverse()[0];
-  };
-
-  /**
-   * Use only the items with the most recent date and prepare items to be merged (Cases:n needs to have a unique key)
-   * @param {Object[]} array
-   * @param {string} newKey - name of key to change to
-   * @param {string} oldKey - name of key to change from
-   * @param {Date} lastUpdateTime - Date to filter objects
-   */
-  const arrayScrubber = (array, newKey, oldKey, lastUpdateTime) => {
-    return array
-      .filter(item => item.Date === lastUpdateTime)
-      .map(item => ({
-        ...item,
-        [newKey]: item[oldKey]
-      }));
-  };
-
   // Handle state
   useEffect(() => {
-    let isCurrent = true
 
     const fetchData = async () => {
       const [
@@ -102,7 +47,6 @@ function App() {
     }
 
     return () =>{
-      isCurrent = false
     }
 
   }, []);
