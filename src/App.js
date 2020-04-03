@@ -82,7 +82,9 @@ function App() {
       resAllCountryTotals.data.sort((a, b) =>
         a.active > b.active ? -1 : 1
       );
-      console.log(resAllCountryTotals.data)
+      resUsByState.data.sort((a, b) =>
+        a.active > b.active ? -1 : 1
+      );
   
       setData({
         summary: resSummary.data,
@@ -110,7 +112,7 @@ function App() {
     <main className="App">
       <header className={"box"}>
         <h2>Track the Coronavirus</h2>
-        <span>(Updated: {data.summary.updated })</span>
+        <span>(Updated: {Date(data.summary.updated).split('G')[0]})</span>
       </header>
 
       <article id="data.summary" className={"box"}>
@@ -200,9 +202,8 @@ function App() {
         <section className={"box"}>
           <p>
             <strong>Thank you</strong> for visiting this page. All the data for
-            this page comes from an <a href={"https://covid19api.com/#"}>API</a>{" "}
-            by <a href={"https://ksred.me/"}>Kyle Redelinghuys</a>. This page
-            was created for practice and I do not guarantee the veracity of this
+            this page comes from an <a href={"https://github.com/novelcovid/api"}>API.</a>{" "}
+             This page was created for practice and I do not guarantee the veracity of this
             information.
           </p>
         </section>
@@ -217,13 +218,10 @@ function App() {
             {data.usByState.map((item, index) => (
                   <section key={index + 400}>
                     <span key={index + 200} style={{ color: "red" }}>
-                      {item.deaths}
+                      {item.deaths.toLocaleString()}
                     </span>
                     <span key={index + 300} style={{ color: "yellow" }}>
                       {item.active.toLocaleString()}
-                    </span>
-                    <span key={index + 400} style={{ color: "green" }}>
-                      {item.recovered}
                     </span>
                     {item.state}
                     <hr />
