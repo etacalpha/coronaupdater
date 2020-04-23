@@ -6,38 +6,38 @@ import "./App.css";
 function App() {
   const [data, setData] = useState();
 
+  const fetchData = async () => {
+    const [
+      resSummary,
+      resAllCountryTotals,
+      resUSACountryTotals,
+      resUsByState
+      
+    ] = await Promise.all([
+      axios("https://corona.lmao.ninja/v2/all"),
+      axios("https://corona.lmao.ninja/v2/countries"),
+      axios("https://corona.lmao.ninja/v2/countries/USA"),
+      axios("https://corona.lmao.ninja/v2/states"),
+    ]);
+
+    // all list sorted by Cases confirmed
+    resAllCountryTotals.data.sort((a, b) =>
+      a.active > b.active ? -1 : 1
+    );
+    resUsByState.data.sort((a, b) =>
+      a.active > b.active ? -1 : 1
+    );
+
+    setData({
+      summary: resSummary.data,
+      allCountryTotals:resAllCountryTotals.data,
+      usCountryTotals:resUSACountryTotals.data,
+      usByState:resUsByState.data
+    });
+  };
+
   // Handle state
   useEffect(() => {
-
-    const fetchData = async () => {
-      const [
-        resSummary,
-        resAllCountryTotals,
-        resUSACountryTotals,
-        resUsByState
-        
-      ] = await Promise.all([
-        axios("https://corona.lmao.ninja/all"),
-        axios("https://corona.lmao.ninja/countries"),
-        axios("https://corona.lmao.ninja/countries/USA"),
-        axios("https://corona.lmao.ninja/states"),
-      ]);
-  
-      // all list sorted by Cases confirmed
-      resAllCountryTotals.data.sort((a, b) =>
-        a.active > b.active ? -1 : 1
-      );
-      resUsByState.data.sort((a, b) =>
-        a.active > b.active ? -1 : 1
-      );
-  
-      setData({
-        summary: resSummary.data,
-        allCountryTotals:resAllCountryTotals.data,
-        usCountryTotals:resUSACountryTotals.data,
-        usByState:resUsByState.data
-      });
-    };
 
     try {
       fetchData();
