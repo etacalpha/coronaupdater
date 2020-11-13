@@ -12,7 +12,7 @@ function App() {
       resAllCountryTotals,
       resUSACountryTotals,
       resUsByState
-      
+
     ] = await Promise.all([
       axios("https://corona.lmao.ninja/v2/all"),
       axios("https://corona.lmao.ninja/v2/countries"),
@@ -22,10 +22,10 @@ function App() {
 
     // all list sorted by Cases confirmed
     resAllCountryTotals.data.sort((a, b) =>
-      a.active > b.active ? -1 : 1
+      a.cases/a.population > b.cases/b.population ? -1 : 1
     );
     resUsByState.data.sort((a, b) =>
-      a.active > b.active ? -1 : 1
+    a.cases/a.population > b.cases/b.population ? -1 : 1
     );
 
     setData({
@@ -50,6 +50,7 @@ function App() {
     }
 
   }, []);
+  console.log(data)
   console.log("created by Steven Beard, email: etacalpha@gmail.com")
   if(!data) return (<div className="App" style={{ fontSize : '2em'}}>Loading...</div>)
   return (
@@ -63,9 +64,11 @@ function App() {
           <h3>
             WORLD SUMMARY<hr></hr>
           </h3>
+          <p>orderd by case/population</p>
         <Scrollbar style={{ width: 370, height: 600 }}>
           <section id={"worldSummaryData"}>
             {data.allCountryTotals.map((item, index) => (
+              item.population!==0&&
                   <section key={index + 400}>
                     <span key={index + 200} style={{ color: "red" }}>
                       {item.deaths.toLocaleString()}
@@ -88,7 +91,7 @@ function App() {
       <article id={"totals"}>
         <section className={"box"}>
           <h1>
-            USA Totals<hr></hr>
+            USA Totals <br></br>({((data.usCountryTotals.tests/data.usCountryTotals.population)*100).toFixed(2)} % tested)<hr></hr>
           </h1>
           <section id={"worldTotalsData"}>
             <section style={{ color: "red" }}>
@@ -97,6 +100,7 @@ function App() {
                 {data.usCountryTotals.deaths.toLocaleString()
                   }
               </h3>
+              <p>{((data.usCountryTotals.deaths/data.usCountryTotals.population)).toFixed(4)} of population <br></br>(1 in {data.usCountryTotals.oneDeathPerPeople})</p>
             </section>
             <section style={{ color: "yellow" }}>
               <h3>Active</h3>
@@ -104,20 +108,23 @@ function App() {
                 {data.usCountryTotals.active.toLocaleString()
                   }
               </h3>
+              <p>{((data.usCountryTotals.active/data.usCountryTotals.population)).toFixed(4)} of population <br></br>(1 in {data.usCountryTotals.oneDeathPerPeople})</p>
             </section>
-            <section style={{ color: "green" }}>
-              <h3>Recovered</h3>
+            <section >
+              <h3>Total Cases</h3>
               <h3>
-                {data.usCountryTotals.recovered.toLocaleString()
+                {data.usCountryTotals.cases.toLocaleString()
                   }
               </h3>
+              <p>{((data.usCountryTotals.cases/data.usCountryTotals.population)).toFixed(4)} of population <br></br>(1 in {data.usCountryTotals.oneCasePerPeople})</p>
+
             </section>
           </section>
         </section>
 
         <section className={"box"}>
           <h1>
-            World Totals<hr></hr>
+            World Totals <br></br>({((data.summary.tests/data.summary.population)*100).toFixed(2)} % tested)<hr></hr>
           </h1>
           <section id={"worldTotalsData"}>
             <section style={{ color: "red" }}>
@@ -126,6 +133,7 @@ function App() {
                 {data.summary.deaths.toLocaleString()
                   }
               </h3>
+              <p>{((data.summary.deaths/data.summary.population)).toFixed(4)} of population</p>
             </section>
             <section style={{ color: "yellow" }}>
               <h3>Active</h3>
@@ -133,13 +141,15 @@ function App() {
                 {data.summary.active.toLocaleString()
                   }
               </h3>
+              <p>{((data.summary.active/data.summary.population)).toFixed(4)} of population</p>
             </section>
-            <section style={{ color: "green" }}>
-              <h3>Recovered</h3>
+            <section >
+              <h3>Total Cases</h3>
               <h3>
-                {data.summary.recovered.toLocaleString()
+                {data.summary.cases.toLocaleString()
                   }
               </h3>
+              <p>{((data.summary.cases/data.summary.population)).toFixed(4)} of population</p>
             </section>
           </section>
         </section>
@@ -157,9 +167,12 @@ function App() {
           <h3>
             UNITED STATES SUMMARY<hr></hr>
           </h3>
+          <p>orderd by case/population</p>
+
         <Scrollbar style={{ width: 370, height: 600 }}>
           <section id={"usSummaryData"}>
             {data.usByState.map((item, index) => (
+              item.population!==0 &&
                   <section key={index + 400}>
                     <span key={index + 200} style={{ color: "red" }}>
                       {item.deaths.toLocaleString()}
@@ -174,7 +187,7 @@ function App() {
               }
           </section>
         </Scrollbar>
-      </article> 
+      </article>
     </main>
   );
 }
