@@ -91,7 +91,7 @@ function App() {
       <article id={"totals"}>
         <section className={"box"}>
           <h1>
-            USA Totals <br></br>({((data.usCountryTotals.tests/data.usCountryTotals.population)*100).toFixed(2)} % tested)<hr></hr>
+            USA Totals <br></br> Population {data.usCountryTotals.population.toLocaleString()} <br></br>({((data.usCountryTotals.tests/data.usCountryTotals.population)*100).toFixed(2)} % tested)<hr></hr>
           </h1>
           <section id={"worldTotalsData"}>
             <section style={{ color: "red" }}>
@@ -108,7 +108,7 @@ function App() {
                 {data.usCountryTotals.active.toLocaleString()
                   }
               </h3>
-              <p>{((data.usCountryTotals.active/data.usCountryTotals.population)).toFixed(4)} of population <br></br>(1 in {data.usCountryTotals.oneDeathPerPeople})</p>
+              <p>{((data.usCountryTotals.active/data.usCountryTotals.population)).toFixed(4)} of population <br></br>(1 in {(data.usCountryTotals.population / data.usCountryTotals.active).toFixed()})</p>
             </section>
             <section >
               <h3>Total Cases</h3>
